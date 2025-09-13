@@ -188,413 +188,832 @@ class _MyHomePageState extends State<MyHomePage> {
           decoration: BoxDecoration(
             color: const Color.fromARGB(255, 209, 209, 209),
           ),
-          child: Center(
-            
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start, // <-- put it here
-
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.2),
-                        spreadRadius: 3,
-                        blurRadius: 10,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  margin: EdgeInsets.only(bottom: 20),
-                  padding: EdgeInsets.all(16),
-                  child: TableCalendar<Event>(
-                    firstDay: DateTime.utc(2020, 1, 1),
-                    lastDay: DateTime.utc(2030, 12, 31),
-                    focusedDay: _focusedDay,
-                    selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                    onDaySelected: (selectedDay, focusedDay) {
-                      setState(() {
-                        _selectedDay = selectedDay;
-                        _focusedDay = focusedDay;
-                      });
-                    },
-                    headerStyle: HeaderStyle(
-                      formatButtonVisible: false,
-                      titleCentered: true,
-                      titleTextStyle: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.lightBlue,
-                      ),
-                      leftChevronIcon: Icon(Icons.chevron_left, color: Colors.lightBlue),
-                      rightChevronIcon: Icon(Icons.chevron_right, color: Colors.lightBlue),
-                    ),
-                    daysOfWeekStyle: DaysOfWeekStyle(
-                      weekdayStyle: TextStyle(
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w600,
-                      ),
-                      weekendStyle: TextStyle(
-                        color: Colors.lightBlue[300],
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    calendarStyle: CalendarStyle(
-                      outsideDaysVisible: false,
-                      todayDecoration: BoxDecoration(
-                        color: Colors.black,
-                        shape: BoxShape.circle,
-                      ),
-                      selectedDecoration: BoxDecoration(
-                        color: Colors.lightBlue,
-                        shape: BoxShape.circle,
-                      ),
-                      weekendTextStyle: TextStyle(color: Colors.lightBlue[400]),
-                      holidayTextStyle: TextStyle(color: Colors.red[400]),
-                    ),
-                    calendarBuilders: CalendarBuilders(
-                      defaultBuilder: (context, day, focusedDay) {
-                        final dayEvents = _getEventsForDay(day);
-                        if (dayEvents.isNotEmpty) {
-                          final attendanceColor = _getDayAttendanceColor(day);
-                          return Container(
-                            margin: const EdgeInsets.all(4.0),
-                            decoration: BoxDecoration(
-                              color: attendanceColor,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: attendanceColor.withOpacity(0.4),
-                                  spreadRadius: 1,
-                                  blurRadius: 3,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            alignment: Alignment.center,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '${day.day}',
-                                  style: TextStyle(
-                                    color: attendanceColor == Colors.grey[300] ? Colors.black87 : Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(top: 2),
-                                  width: 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ),
-                
-                // Enhanced Events Display Section
-                if (_selectedDay != null && _getEventsForDay(_selectedDay!).isNotEmpty)
-                  Container(
-                    width: double.infinity,
-                    margin: EdgeInsets.only(bottom: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
-                          spreadRadius: 2,
-                          blurRadius: 8,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Column(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              bool isLargeScreen = constraints.maxWidth > 1000;
+              
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  isLargeScreen
+                    ? Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Date Header
-                          Container(
-                            width: double.infinity,
-                            padding: EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Colors.lightBlue[400]!, Colors.lightBlue[600]!],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
+                          // Left side: Calendar and Events (takes 65% of width)
+                          Expanded(
+                            flex: 65,
+                            child: Column(
                               children: [
-                                Icon(Icons.calendar_today, color: Colors.white, size: 24),
-                                SizedBox(width: 12),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "${_selectedDay!.day} ${_getMonthName(_selectedDay!.month)} ${_selectedDay!.year}",
-                                      style: TextStyle(
+                                // Calendar section
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.2),
+                                        spreadRadius: 3,
+                                        blurRadius: 10,
+                                        offset: Offset(0, 5),
+                                      ),
+                                    ],
+                                  ),
+                                  margin: EdgeInsets.only(bottom: 20),
+                                  padding: EdgeInsets.all(16),
+                                  child: TableCalendar<Event>(
+                                    firstDay: DateTime.utc(2020, 1, 1),
+                                    lastDay: DateTime.utc(2030, 12, 31),
+                                    focusedDay: _focusedDay,
+                                    selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                                    onDaySelected: (selectedDay, focusedDay) {
+                                      setState(() {
+                                        _selectedDay = selectedDay;
+                                        _focusedDay = focusedDay;
+                                      });
+                                    },
+                                    headerStyle: HeaderStyle(
+                                      formatButtonVisible: false,
+                                      titleCentered: true,
+                                      titleTextStyle: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                        color: Colors.lightBlue,
+                                      ),
+                                      leftChevronIcon: Icon(Icons.chevron_left, color: Colors.lightBlue),
+                                      rightChevronIcon: Icon(Icons.chevron_right, color: Colors.lightBlue),
+                                    ),
+                                    daysOfWeekStyle: DaysOfWeekStyle(
+                                      weekdayStyle: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      weekendStyle: TextStyle(
+                                        color: Colors.lightBlue[300],
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    Text(
-                                      "${_getEventsForDay(_selectedDay!).length} event${_getEventsForDay(_selectedDay!).length != 1 ? 's' : ''} scheduled",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white.withOpacity(0.9),
+                                    calendarStyle: CalendarStyle(
+                                      outsideDaysVisible: false,
+                                      todayDecoration: BoxDecoration(
+                                        color: Colors.black,
+                                        shape: BoxShape.circle,
                                       ),
+                                      selectedDecoration: BoxDecoration(
+                                        color: Colors.lightBlue,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      weekendTextStyle: TextStyle(color: Colors.lightBlue[400]),
+                                      holidayTextStyle: TextStyle(color: Colors.red[400]),
                                     ),
-                                  ],
+                                    calendarBuilders: CalendarBuilders(
+                                      defaultBuilder: (context, day, focusedDay) {
+                                        final dayEvents = _getEventsForDay(day);
+                                        if (dayEvents.isNotEmpty) {
+                                          final attendanceColor = _getDayAttendanceColor(day);
+                                          return Container(
+                                            margin: const EdgeInsets.all(4.0),
+                                            decoration: BoxDecoration(
+                                              color: attendanceColor,
+                                              shape: BoxShape.circle,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: attendanceColor.withOpacity(0.4),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 3,
+                                                  offset: Offset(0, 2),
+                                                ),
+                                              ],
+                                            ),
+                                            alignment: Alignment.center,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  '${day.day}',
+                                                  style: TextStyle(
+                                                    color: attendanceColor == Colors.grey[300] ? Colors.black87 : Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                                Container(
+                                                  margin: EdgeInsets.only(top: 2),
+                                                  width: 6,
+                                                  height: 6,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
                                 ),
+                                
+                                // Events display section (below calendar)
+                                if (_selectedDay != null && _getEventsForDay(_selectedDay!).isNotEmpty)
+                                  Container(
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.2),
+                                          spreadRadius: 2,
+                                          blurRadius: 8,
+                                          offset: Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Padding(
+                                      padding: EdgeInsets.all(20),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          // Date Header
+                                          Container(
+                                            width: double.infinity,
+                                            padding: EdgeInsets.all(16),
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [Colors.lightBlue[400]!, Colors.lightBlue[600]!],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                              ),
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.calendar_today, color: Colors.white, size: 24),
+                                                SizedBox(width: 12),
+                                                Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      "${_selectedDay!.day} ${_getMonthName(_selectedDay!.month)} ${_selectedDay!.year}",
+                                                      style: TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${_getEventsForDay(_selectedDay!).length} event${_getEventsForDay(_selectedDay!).length != 1 ? 's' : ''} scheduled",
+                                                      style: TextStyle(
+                                                        fontSize: 14,
+                                                        color: Colors.white.withOpacity(0.9),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          
+                                          SizedBox(height: 16),
+                                          
+                                          // Events List
+                                          ..._getEventsForDay(_selectedDay!).asMap().entries.map((entry) {
+                                            int index = entry.key;
+                                            Event event = entry.value;
+                                            return Container(
+                                              margin: EdgeInsets.only(bottom: 12),
+                                              decoration: BoxDecoration(
+                                                color: Colors.lightBlue[50],
+                                                borderRadius: BorderRadius.circular(12),
+                                                border: Border.all(color: Colors.lightBlue.withOpacity(0.2)),
+                                              ),
+                                              child: ListTile(
+                                                contentPadding: EdgeInsets.all(16),
+                                                leading: Container(
+                                                  width: 50,
+                                                  height: 50,
+                                                  decoration: BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      colors: [Colors.lightBlue[300]!, Colors.lightBlue[500]!],
+                                                      begin: Alignment.topLeft,
+                                                      end: Alignment.bottomRight,
+                                                    ),
+                                                    borderRadius: BorderRadius.circular(25),
+                                                  ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      "${index + 1}",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 18,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                title: Text(
+                                                  event.event_title,
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                    color: Colors.lightBlue[800],
+                                                  ),
+                                                ),
+                                                subtitle: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    SizedBox(height: 8),
+                                                    Row(
+                                                      children: [
+                                                        Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
+                                                        SizedBox(width: 4),
+                                                        Text(
+                                                          event.event_time.format(context),
+                                                          style: TextStyle(
+                                                            color: Colors.grey[700],
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    SizedBox(height: 4),
+                                                    Row(
+                                                      children: [
+                                                        Icon(Icons.people, size: 16, color: Colors.grey[600]),
+                                                        SizedBox(width: 4),
+                                                        Text(
+                                                          "${event.event_participants.length} participant${event.event_participants.length != 1 ? 's' : ''}",
+                                                          style: TextStyle(
+                                                            color: Colors.grey[700],
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                                trailing: Container(
+                                                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.lightBlue,
+                                                    borderRadius: BorderRadius.circular(20),
+                                                  ),
+                                                  child: Text(
+                                                    "Details",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 12,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                                onTap: () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (BuildContext context) {
+                                                      return AlertDialog(
+                                                        title: Text("Event Details"),
+                                                        content: StatefulBuilder(
+                                                          builder: (BuildContext context, StateSetter setDialogState) {
+                                                            return SingleChildScrollView(
+                                                              child: Column(
+                                                                mainAxisSize: MainAxisSize.min,
+                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                children: [
+                                                                  Text("Event name: ${event.event_title}"),
+                                                                  Text("Date: ${event.event_date.toString().split(' ')[0]}"),
+                                                                  Text("Time: ${event.event_time.format(context)}"),
+                                                                  Text("Number of participants: ${event.event_participants.length}"),
+                                                                  SizedBox(height: 10),
+                                                                  Text("Participants:", style: TextStyle(fontWeight: FontWeight.bold)),
+                                                                  if (event.event_participants.isEmpty)
+                                                                    Text("No participants added", style: TextStyle(fontStyle: FontStyle.italic))
+                                                                  else
+                                                                    ...event.event_participants.map((participant) => Padding(
+                                                                      padding: EdgeInsets.only(left: 16),
+                                                                      child: Row(
+                                                                        children: [
+                                                                          Container(
+                                                                            width: 8,
+                                                                            height: 8,
+                                                                            decoration: BoxDecoration(
+                                                                              color: _getStatusColor(participant.$2),
+                                                                              shape: BoxShape.circle,
+                                                                            ),
+                                                                          ),
+                                                                          SizedBox(width: 8),
+                                                                          Text("${participant.$1.name}"),
+                                                                          SizedBox(width: 8),
+                                                                          DropdownButton<String>(
+                                                                            value: participant.$2,
+                                                                            hint: Text('Define a status'),
+                                                                            items: precense.map((String s) {
+                                                                              return DropdownMenuItem<String>(
+                                                                                value: s,
+                                                                                child: Text(s),
+                                                                              );
+                                                                            }).toList(),
+                                                                            onChanged: (String? newState) {
+                                                                              if (newState != null) {
+                                                                                setDialogState(() {
+                                                                                  _updateParticipantStatus(event, participant.$1, newState, participant.$2);
+                                                                                });
+                                                                              }
+                                                                            },
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    )),
+                                                                ],
+                                                              ),
+                                                            );
+                                                          },
+                                                        ),
+                                                        actions: [
+                                                          TextButton(
+                                                            onPressed: () => Navigator.of(context).pop(),
+                                                            child: Text("Close"),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                              ),
+                                            );
+                                          }).toList(),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                               ],
                             ),
                           ),
                           
-                          SizedBox(height: 16),
-                          
-                          // Events List
-                          ..._getEventsForDay(_selectedDay!).asMap().entries.map((entry) {
-                            int index = entry.key;
-                            Event event = entry.value;
-                            return Container(
-                              margin: EdgeInsets.only(bottom: 12),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          // Form section (takes 35% of width)
+                          Expanded(
+                            flex: 30,
+                            child: Container(
                               decoration: BoxDecoration(
-                                color: Colors.lightBlue[50],
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.lightBlue.withOpacity(0.2)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.3),
+                                    spreadRadius: 2,
+                                    blurRadius: 8,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              child: ListTile(
-                                contentPadding: EdgeInsets.all(16),
-                                leading: Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [Colors.lightBlue[300]!, Colors.lightBlue[500]!],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(25),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      "${index + 1}",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                title: Text(
-                                  event.event_title,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Colors.lightBlue[800],
-                                  ),
-                                ),
-                                subtitle: Column(
+                              child: Padding(
+                                padding: EdgeInsets.all(20),
+                                child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          event.event_time.format(context),
-                                          style: TextStyle(
-                                            color: Colors.grey[700],
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
+                                    Text(
+                                      "Event Creation",
+                                      style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.lightBlue,
+                                      ),
                                     ),
-                                    SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        Icon(Icons.people, size: 16, color: Colors.grey[600]),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          "${event.event_participants.length} participant${event.event_participants.length != 1 ? 's' : ''}",
-                                          style: TextStyle(
-                                            color: Colors.grey[700],
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
+                                    SizedBox(height: 20),
+                                    
+                                    Container(
+                                      padding: EdgeInsets.all(20),
+                                      decoration: BoxDecoration(
+                                        color: Colors.lightBlue.withOpacity(0.05),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: Colors.lightBlue.withOpacity(0.2)),
+                                      ),
+                                      child: MyForm(
+                                        onEventCreated: () {
+                                          setState(() {
+                                            // This will trigger a rebuild of the calendar
+                                          });
+                                        },
+                                      ),
                                     ),
                                   ],
                                 ),
-                                trailing: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.lightBlue,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    "Details",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Column(  // Stack vertically on smaller screens
+                        children: [
+                          // Calendar section (full width on small screens)
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  spreadRadius: 3,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 5),
                                 ),
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        title: Text("Event Details"),
-                                        content: StatefulBuilder(
-                                          builder: (BuildContext context, StateSetter setDialogState) {
-                                            return SingleChildScrollView(
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                              ],
+                            ),
+                            margin: EdgeInsets.only(bottom: 20),
+                            padding: EdgeInsets.all(16),
+                            child: TableCalendar<Event>(
+                              firstDay: DateTime.utc(2020, 1, 1),
+                              lastDay: DateTime.utc(2030, 12, 31),
+                              focusedDay: _focusedDay,
+                              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                              onDaySelected: (selectedDay, focusedDay) {
+                                setState(() {
+                                  _selectedDay = selectedDay;
+                                  _focusedDay = focusedDay;
+                                });
+                              },
+                              headerStyle: HeaderStyle(
+                                formatButtonVisible: false,
+                                titleCentered: true,
+                                titleTextStyle: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.lightBlue,
+                                ),
+                                leftChevronIcon: Icon(Icons.chevron_left, color: Colors.lightBlue),
+                                rightChevronIcon: Icon(Icons.chevron_right, color: Colors.lightBlue),
+                              ),
+                              daysOfWeekStyle: DaysOfWeekStyle(
+                                weekdayStyle: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                weekendStyle: TextStyle(
+                                  color: Colors.lightBlue[300],
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              calendarStyle: CalendarStyle(
+                                outsideDaysVisible: false,
+                                todayDecoration: BoxDecoration(
+                                  color: Colors.black,
+                                  shape: BoxShape.circle,
+                                ),
+                                selectedDecoration: BoxDecoration(
+                                  color: Colors.lightBlue,
+                                  shape: BoxShape.circle,
+                                ),
+                                weekendTextStyle: TextStyle(color: Colors.lightBlue[400]),
+                                holidayTextStyle: TextStyle(color: Colors.red[400]),
+                              ),
+                              calendarBuilders: CalendarBuilders(
+                                defaultBuilder: (context, day, focusedDay) {
+                                  final dayEvents = _getEventsForDay(day);
+                                  if (dayEvents.isNotEmpty) {
+                                    final attendanceColor = _getDayAttendanceColor(day);
+                                    return Container(
+                                      margin: const EdgeInsets.all(4.0),
+                                      decoration: BoxDecoration(
+                                        color: attendanceColor,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: attendanceColor.withOpacity(0.4),
+                                            spreadRadius: 1,
+                                            blurRadius: 3,
+                                            offset: Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '${day.day}',
+                                            style: TextStyle(
+                                              color: attendanceColor == Colors.grey[300] ? Colors.black87 : Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          Container(
+                                            margin: EdgeInsets.only(top: 2),
+                                            width: 6,
+                                            height: 6,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ),
+                          
+                          // Events display section (below calendar on small screens)
+                          if (_selectedDay != null && _getEventsForDay(_selectedDay!).isNotEmpty)
+                            Container(
+                              width: double.infinity,
+                              margin: EdgeInsets.only(bottom: 20),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.2),
+                                    spreadRadius: 2,
+                                    blurRadius: 8,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Date Header
+                                    Container(
+                                      width: double.infinity,
+                                      padding: EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [Colors.lightBlue[400]!, Colors.lightBlue[600]!],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.calendar_today, color: Colors.white, size: 24),
+                                          SizedBox(width: 12),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "${_selectedDay!.day} ${_getMonthName(_selectedDay!.month)} ${_selectedDay!.year}",
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              Text(
+                                                "${_getEventsForDay(_selectedDay!).length} event${_getEventsForDay(_selectedDay!).length != 1 ? 's' : ''} scheduled",
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.white.withOpacity(0.9),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    
+                                    SizedBox(height: 16),
+                                    
+                                    // Events List
+                                    ..._getEventsForDay(_selectedDay!).asMap().entries.map((entry) {
+                                      int index = entry.key;
+                                      Event event = entry.value;
+                                      return Container(
+                                        margin: EdgeInsets.only(bottom: 12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.lightBlue[50],
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(color: Colors.lightBlue.withOpacity(0.2)),
+                                        ),
+                                        child: ListTile(
+                                          contentPadding: EdgeInsets.all(16),
+                                          leading: Container(
+                                            width: 50,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [Colors.lightBlue[300]!, Colors.lightBlue[500]!],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                              ),
+                                              borderRadius: BorderRadius.circular(25),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                "${index + 1}",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          title: Text(
+                                            event.event_title,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                              color: Colors.lightBlue[800],
+                                            ),
+                                          ),
+                                          subtitle: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              SizedBox(height: 8),
+                                              Row(
                                                 children: [
-                                                  Text("Event name: ${event.event_title}"),
-                                                  Text("Date: ${event.event_date.toString().split(' ')[0]}"),
-                                                  Text("Time: ${event.event_time.format(context)}"),
-                                                  Text("Number of participants: ${event.event_participants.length}"),
-                                                  SizedBox(height: 10),
-                                                  Text("Participants:", style: TextStyle(fontWeight: FontWeight.bold)),
-                                                  if (event.event_participants.isEmpty)
-                                                    Text("No participants added", style: TextStyle(fontStyle: FontStyle.italic))
-                                                  else
-                                                    ...event.event_participants.map((participant) => Padding(
-                                                      padding: EdgeInsets.only(left: 16),
-                                                      child: Row(
-                                                        children: [
-                                                          Container(
-                                                            width: 8,
-                                                            height: 8,
-                                                            decoration: BoxDecoration(
-                                                              color: _getStatusColor(participant.$2),
-                                                              shape: BoxShape.circle,
-                                                            ),
-                                                          ),
-                                                          SizedBox(width: 8),
-                                                          Text("${participant.$1.name}"),
-                                                          SizedBox(width: 8),
-                                                          DropdownButton<String>(
-                                                            value: participant.$2,
-                                                            hint: Text('Define a status'),
-                                                            items: precense.map((String s) {
-                                                              return DropdownMenuItem<String>(
-                                                                value: s,
-                                                                child: Text(s),
-                                                              );
-                                                            }).toList(),
-                                                            onChanged: (String? newState) {
-                                                              if (newState != null) {
-                                                                setDialogState(() {
-                                                                  _updateParticipantStatus(event, participant.$1, newState, participant.$2);
-                                                                });
-                                                              }
-                                                            },
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    )),
+                                                  Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
+                                                  SizedBox(width: 4),
+                                                  Text(
+                                                    event.event_time.format(context),
+                                                    style: TextStyle(
+                                                      color: Colors.grey[700],
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                  ),
                                                 ],
                                               ),
+                                              SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  Icon(Icons.people, size: 16, color: Colors.grey[600]),
+                                                  SizedBox(width: 4),
+                                                  Text(
+                                                    "${event.event_participants.length} participant${event.event_participants.length != 1 ? 's' : ''}",
+                                                    style: TextStyle(
+                                                      color: Colors.grey[700],
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          trailing: Container(
+                                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: Colors.lightBlue,
+                                              borderRadius: BorderRadius.circular(20),
+                                            ),
+                                            child: Text(
+                                              "Details",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          onTap: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  title: Text("Event Details"),
+                                                  content: StatefulBuilder(
+                                                    builder: (BuildContext context, StateSetter setDialogState) {
+                                                      return SingleChildScrollView(
+                                                        child: Column(
+                                                          mainAxisSize: MainAxisSize.min,
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text("Event name: ${event.event_title}"),
+                                                            Text("Date: ${event.event_date.toString().split(' ')[0]}"),
+                                                            Text("Time: ${event.event_time.format(context)}"),
+                                                            Text("Number of participants: ${event.event_participants.length}"),
+                                                            SizedBox(height: 10),
+                                                            Text("Participants:", style: TextStyle(fontWeight: FontWeight.bold)),
+                                                            if (event.event_participants.isEmpty)
+                                                              Text("No participants added", style: TextStyle(fontStyle: FontStyle.italic))
+                                                            else
+                                                              ...event.event_participants.map((participant) => Padding(
+                                                                padding: EdgeInsets.only(left: 16),
+                                                                child: Row(
+                                                                  children: [
+                                                                    Container(
+                                                                      width: 8,
+                                                                      height: 8,
+                                                                      decoration: BoxDecoration(
+                                                                        color: _getStatusColor(participant.$2),
+                                                                        shape: BoxShape.circle,
+                                                                      ),
+                                                                    ),
+                                                                    SizedBox(width: 8),
+                                                                    Text("${participant.$1.name}"),
+                                                                    SizedBox(width: 8),
+                                                                    DropdownButton<String>(
+                                                                      value: participant.$2,
+                                                                      hint: Text('Define a status'),
+                                                                      items: precense.map((String s) {
+                                                                        return DropdownMenuItem<String>(
+                                                                          value: s,
+                                                                          child: Text(s),
+                                                                        );
+                                                                      }).toList(),
+                                                                      onChanged: (String? newState) {
+                                                                        if (newState != null) {
+                                                                          setDialogState(() {
+                                                                            _updateParticipantStatus(event, participant.$1, newState, participant.$2);
+                                                                          });
+                                                                        }
+                                                                      },
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              )),
+                                                          ],
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () => Navigator.of(context).pop(),
+                                                      child: Text("Close"),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
                                             );
                                           },
                                         ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () => Navigator.of(context).pop(),
-                                            child: Text("Close"),
-                                          ),
-                                        ],
                                       );
-                                    },
-                                  );
-                                },
+                                    }).toList(),
+                                  ],
+                                ),
                               ),
-                            );
-                          }).toList(),
+                            ),
+                          
+                          // Form section (full width on small screens)
+                          Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.3),
+                                  spreadRadius: 2,
+                                  blurRadius: 8,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Event Creation",
+                                    style: TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.lightBlue,
+                                    ),
+                                  ),
+                                  SizedBox(height: 20),
+                                  
+                                  Container(
+                                    width: double.infinity,
+                                    padding: EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: Colors.lightBlue.withOpacity(0.05),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.lightBlue.withOpacity(0.2)),
+                                    ),
+                                    child: MyForm(
+                                      onEventCreated: () {
+                                        setState(() {
+                                          // This will trigger a rebuild of the calendar
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                  ),
-                
-                SizedBox(height: 20),
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        spreadRadius: 2,
-                        blurRadius: 8,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Event Creation",
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.lightBlue,
-                          ),
-                        ),
-                        SizedBox(height: 20),
-                        
-                        // Event Form Section (Full width now)
-                        Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.lightBlue.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.lightBlue.withOpacity(0.2)),
-                          ),
-                          child: MyForm(
-                            onEventCreated: () {
-                              setState(() {
-                                // This will trigger a rebuild of the calendar
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+                ],
+              );
+            },
           ),
-        ),)
+        ),
+      ),
     );
   }
 }
