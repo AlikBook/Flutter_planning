@@ -58,11 +58,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<Event> _getEventsForDay(DateTime day) {
     return list_of_events.where((event) {
+      //runs through each element of the list and sees if the day is the same
       return isSameDay(event.event_date, day);
     }).toList();
   }
 
-  // New method to get the attendance status color for a day
+  // Method to get the attendance status color for a day
   Color _getDayAttendanceColor(DateTime day) {
     final dayEvents = _getEventsForDay(day);
     if (dayEvents.isEmpty) return Colors.grey[300]!; // No events
@@ -225,6 +226,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     lastDay: DateTime.utc(2030, 12, 31),
                                     focusedDay: _focusedDay,
                                     selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                                    //updates the selected day on selection in the UI
                                     onDaySelected: (selectedDay, focusedDay) {
                                       setState(() {
                                         _selectedDay = selectedDay;
@@ -336,7 +338,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          // Date Header
+                                          // Date Header (Title of the day in white and blue background)
                                           Container(
                                             width: double.infinity,
                                             padding: EdgeInsets.all(16),
@@ -378,7 +380,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                           
                                           SizedBox(height: 16),
                                           
-                                          // Events List
+                                          // Events List of the day (Below the title)
                                           ..._getEventsForDay(_selectedDay!).asMap().entries.map((entry) {
                                             int index = entry.key;
                                             Event event = entry.value;
@@ -470,6 +472,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                   ),
                                                 ),
                                                 onTap: () {
+                                                  //Alert message displayed when clicking an event already created
                                                   showDialog(
                                                     context: context,
                                                     builder: (BuildContext context) {
@@ -555,7 +558,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           SizedBox(
                             width: 10,
                           ),
-                          // Form section (takes 35% of width)
+                          // Form section (takes 30% of width)
                           Expanded(
                             flex: 30,
                             child: Container(
@@ -997,7 +1000,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     child: MyForm(
                                       onEventCreated: () {
                                         setState(() {
-                                          // This will trigger a rebuild of the calendar
+                                          // Triggers a rebuild of the calendar
                                         });
                                       },
                                     ),
