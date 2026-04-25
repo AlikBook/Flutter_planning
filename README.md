@@ -2,6 +2,8 @@
 
 Flutter application for event planning and participant management with attendance tracking.
 
+> **🚀 Live Demo:** [sync-up-planning.vercel.app](https://sync-up-planning.vercel.app/)
+
 ## Project Overview
 
 The Planning Manager allows users to create, manage, and track events with participant attendance.
